@@ -936,6 +936,8 @@ init_slow_query_log(const char *main_log)
 
 /**
  * This is the "real" main which is called on UNIX platforms.
+ * 真正的main函数
+ * PS:是不是就是不支持win?其实也没有这个支持的必要
  */
 int
 main_cmdline(int argc, char **argv)
@@ -944,7 +946,7 @@ main_cmdline(int argc, char **argv)
 #ifdef HAVE_SIGACTION
     static struct sigaction sigsegv_sa;
 #endif
-    /* read the command-line options */
+    /* read the command-line options */     
     struct chassis_frontend_t *frontend = NULL;
     chassis_options_t *opts = NULL;
 
@@ -1376,6 +1378,9 @@ main_cmdline(int argc, char **argv)
     return exit_code;
 }
 
+/**
+ * @brief 程序中这里开始
+ */
 int
 main(int argc, char **argv)
 {

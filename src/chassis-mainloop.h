@@ -109,23 +109,49 @@ struct incremental_guid_state_t {
 void incremental_guid_init(struct incremental_guid_state_t *s);
 uint64_t incremental_guid_get_next(struct incremental_guid_state_t *s);
 #endif
-
+/**
+ * 整个服务器的配置信息,应该是整个服务器运转的核心结构
+ * 
+ */
 struct chassis {
     struct event_base *event_base;
     gchar *event_hdr_version;
 
-    /**< array(chassis_plugin) */
+    /**< array(chassis_plugin) 
+     * 加载模块
+    */
     GPtrArray *modules;
     void *admin_plugin;
 
-    /**< base directory for all relative paths referenced */
+    /**
+     * 基础路径，其它配置可以以此为基准配置相对路径。(必须是绝对路径)
+     * default: /usr/lib/cetus
+    */
     gchar *base_dir;
-    /**< plugin dir for save settings */
+
+    /**< plugin dir for save settings 
+     * 加载库文件路径
+    */
     gchar *plugin_dir;
+
+    /**
+     * JSON配置文件路径，JSON文件包括包括：账号配置文件、变量处理配置文件、分库版本的分片规则配置文件
+     *  default:/usr/lib/cetus/conf
+     */
     gchar *conf_dir;
-    /**< user to run as */
+
+    /**< user to run as 
+     * 启动进程的用户，只有以root身份运行时才能使用
+     * Default: root
+    */
     gchar *user;
 
+/**
+ * @brief Proxy监听的IP和端口 
+ * Default: :4040
+ * proxy-address = 127.0.0.1:4440
+ * 
+ */
     char *proxy_address;
     char *default_db;
     char *ifname;
@@ -136,11 +162,18 @@ struct chassis {
 
     guint64 sess_key;
 
+// 这个下面是一大票的开关
+
     unsigned int maintain_close_mode:1;
     unsigned int disable_threads:1;
     unsigned int ssl:1;
     unsigned int is_tcp_stream_enabled:1;
     unsigned int is_fast_stream_enabled:1;
+    /**
+     * @brief 是否是分库分表模式（分库模式下partition-mode=true）
+     * 非分库分表模式就是读写分离?
+     * 
+     */
     unsigned int is_partition_mode:1;
     unsigned int check_sql_loosely:1;
     unsigned int is_sql_special_processed:1;
@@ -152,6 +185,10 @@ struct chassis {
     unsigned int master_preferred:1;
     unsigned int is_manual_down:1;
     unsigned int is_reduce_conns:1;
+    /**
+     * @brief 记录xa日志详情（分库中有效）
+     * Default: false
+     */
     unsigned int xa_log_detailed:1;
     unsigned int charset_check:1;
     unsigned int check_slave_delay:1;
@@ -168,6 +205,11 @@ struct chassis {
     int need_to_refresh_server_connections;
 
     int cpus;
+    /**
+     * 启动worker进程的数量，启动的数量最好小于等于cpu数目
+     * 默认:1
+     * 
+     */
     int worker_processes;
     int active_worker_processes;
     int child_instant_exit_times;
@@ -223,13 +265,32 @@ struct chassis {
     gboolean allow_new_conns;
 
     gint verbose_shutdown;
+    /**
+     * @brief 通过守护进程启动
+     * 默认:false
+     */
     gint daemon_mode;
     char **argv;
     int    argc;
+    /**
+     * @brief PID文件路径
+     *  必须存在,可能的值: /var/log/cetus.pid
+     */
     gchar *pid_file;
     gchar *old_pid_file;
+    /**
+     * @brief 日志级别 
+     * 可选值: debug | info | message | warning | error | critical(default)
+     * default: info
+     * 
+     */
     gchar *log_level;
     gchar **plugin_names;
+    /**
+     * @brief xa日志路径（分库中有效）
+     * log-xa-file = logs/cetus.log
+     * 
+     */
     gchar *log_xa_filename;
     guint invoke_dbg_on_crash;
     gint max_files_number;
