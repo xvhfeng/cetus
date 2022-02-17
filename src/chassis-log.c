@@ -81,6 +81,12 @@ const struct {
 static gboolean
  chassis_log_rotate_reopen(chassis_log *log, gpointer userdata, GError **gerr);
 
+/**
+ * @brief 初始化log到stdout
+ * 并且设置fd为-1,如果不初始化file形式的log的话,close和open日志也会不执行具体的行为
+ * 
+ * @return chassis_log* 
+ */
 chassis_log *
 chassis_log_new(void)
 {
@@ -98,6 +104,7 @@ chassis_log_new(void)
     log->last_msg_count = 0;
     log->rotate_func = NULL;
 
+    // 设置一个日志滚动的函数,如果是stderr的话,rotate函数不会影响输出
     chassis_log_set_rotate_func(log, chassis_log_rotate_reopen, NULL, NULL);
 
     return log;
@@ -118,7 +125,9 @@ chassis_log_set_level(chassis_log *log, const gchar *level)
     return -1;
 }
 
-/**
+/** 
+ * 打开文件形式的log文件
+ * 可以在不同的进程中使用同一个日志文件不会乱序
  * open the log-file
  *
  * open the log-file set in log->log_filename
@@ -231,6 +240,9 @@ chassis_log_write(chassis_log *log, int log_level, GString *str)
 }
 
 /**
+ * 删除除自身src子目录以外的所有前置路径,这个其实没啥必要,可能只是为了美观
+ * PS:嗯...日志美观也很重要,赏心悦目的日志是每个人都喜欢的,so这个功能完美
+ * 
  * skip the 'top_srcdir' from a string starting with G_STRLOC or 
  * __FILE__ if it is absolute
  *
@@ -319,6 +331,7 @@ chassis_log_rotate(chassis_log *log, GError **gerr)
 }
 
 /**
+ * 设置滚动函数
  * chassis_log_set_rotate_func:
  * @log: a #chassis_log
  * @rotate_func: (allow-none): log-file rotation function
@@ -353,6 +366,14 @@ chassis_log_set_rotate_func(chassis_log *log, chassis_log_rotate_func rotate_fun
 
 }
 
+/**
+ * @brief 看上去这个函数只有滚动日志是有用的
+ * 
+ * @param log_domain 
+ * @param log_level 
+ * @param message 
+ * @param user_data 
+ */
 static void
 chassis_log_func_locked(const gchar G_GNUC_UNUSED *log_domain, GLogLevelFlags log_level,
                         const gchar *message, gpointer user_data)
@@ -406,6 +427,7 @@ chassis_log_func_locked(const gchar G_GNUC_UNUSED *log_domain, GLogLevelFlags lo
      * was a duplicate. Otherwise, do not print duplicates unless they have been
      * ignored at least 100 times, or they were last printed greater than 
      * 30 seconds ago.
+     * 这里滚动日志后肯定会再刷一遍最后一条日志是因为保证不丢吗?
      */
     if (log->is_rotated || !is_duplicate || log->last_msg_count > 100 || time(NULL) - log->last_msg_ts > 30) {
 

@@ -962,21 +962,31 @@ main_cmdline(int argc, char **argv)
     exit_code = status; \
     exit_location = G_STRLOC; \
     goto exit_nicely;
+
     int exit_code = EXIT_SUCCESS;
     const gchar *exit_location = G_STRLOC;
 
-    /* init module, ... system */
+    /* init module, ... system 
+     * 检查glib的版本与glib在此平台上对于GModule的支持
+      * 如果glibc的版本小于2.32.0,初始化GModule
+      */
     if (chassis_frontend_init_glib()) {
         GOTO_EXIT(EXIT_FAILURE);
     }
 
-    /* start the logging ... to stderr */
+    /* start the logging ... to stderr 
+     * 先把日志初始化为标准错误
+     */
     log = chassis_log_new();
-    /* display messages while parsing or loading plugins */
+    /* display messages while parsing or loading plugins 
+     * 降低一下启动时log输出的级别,以便可以显示解析和加载插件时的日志*/
     log->min_lvl = G_LOG_LEVEL_MESSAGE;
+    // 给glib设置log输出函数
     g_log_set_default_handler(chassis_log_func, log);
 
-    /* may fail on library mismatch */
+    /* may fail on library mismatch 
+     * 可能在库(plugins吗?)不匹配的时候出错
+     */
     if (NULL == (srv = chassis_new())) {
         GOTO_EXIT(EXIT_FAILURE);
     }

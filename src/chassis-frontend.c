@@ -47,6 +47,8 @@
 
 /**
  * initialize the basic components of the chassis
+ * 检查glib的版本与glib在此平台上对于module的支持
+ * 如果glib小于2.32.0,初始化glib
  */
 int
 chassis_frontend_init_glib()
@@ -56,6 +58,7 @@ chassis_frontend_init_glib()
     g_mem_set_vtable(glib_mem_profiler_table);
 #endif
 
+// 检测glic的版本
     if (!GLIB_CHECK_VERSION(2, 6, 0)) {
         g_critical("the glib header is too old, need at least 2.6.0, got: %d.%d.%d",
                    GLIB_MAJOR_VERSION, GLIB_MINOR_VERSION, GLIB_MICRO_VERSION);
@@ -74,12 +77,15 @@ chassis_frontend_init_glib()
         return -1;
     }
 
+// 检查当前平台是否支持模块
     if (!g_module_supported()) {
         g_critical("loading modules is not supported on this platform");
         return -1;
     }
 #if !GLIB_CHECK_VERSION(2, 32, 0)
-    /* GLIB below 2.32 must call thread_init */
+    /* GLIB below 2.32 must call thread_init
+     * 如果blic小于2.32.0  必须要调用thread_init
+     */
     g_thread_init(NULL);
 #endif
 
