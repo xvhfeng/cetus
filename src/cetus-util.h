@@ -24,13 +24,29 @@
 #include <inttypes.h>
 
 /**
+ * 通过X,赋值pair类型,元素一个是X本身,第二个是X的长度
+ * 一般X为字符串直接量,调动sizeof得到
  * simple macros to get the data and length of a "string"
+ * 
  *
  * C() is for constant strings like "foo"
  * S() is for GString's 
  */
 #define C(x) x, sizeof(x) - 1
+/**
+ * 通过X,赋值pair类型,元素一个是X本身,第二个是X的长度
+ * 一般X为GString类型
+ * simple macros to get the data and length of a "string"
+ * 
+ *
+ * C() is for constant strings like "foo"
+ * S() is for GString's 
+ */
 #define S(x) (x) ? (x)->str : NULL, (x) ? (x)->len : 0
+/**
+ * @brief 得到字符串x的长度
+ * 
+ */
 #define L(x) x, strlen(x)
 
 typedef int32_t BitArray;

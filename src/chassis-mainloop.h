@@ -61,11 +61,26 @@ typedef struct chassis chassis;
 
 #define MAX_WORK_PROCESSES 64
 #define MAX_WORK_PROCESSES_SHIFT 6
+/**
+ * 最大的查询时间
+ * 
+ */
 #define MAX_QUERY_TIME 65536
+/**
+ * 最长的等待时间
+ * 
+ */
 #define MAX_WAIT_TIME 1024
+/**
+ * 最多的重试次数
+ * 
+ */
 #define MAX_TRY_NUM 6
 #define MAX_CREATE_CONN_NUM 256
 #define MAX_DIST_TRAN_PREFIX 64
+/**
+ * 链接最长的keepalive时间
+ */
 #define DEFAULT_LIVE_TIME 7200
 
 #define DEFAULT_POOL_SIZE 10
@@ -110,11 +125,15 @@ void incremental_guid_init(struct incremental_guid_state_t *s);
 uint64_t incremental_guid_get_next(struct incremental_guid_state_t *s);
 #endif
 /**
- * 整个服务器的配置信息,应该是整个服务器运转的核心结构
+ * 整个服务器的上下文,是整个服务器运转的核心结构
  * 
  */
 struct chassis {
     struct event_base *event_base;
+    /**
+     * @brief 当前版本,也是event库的版本
+     * 
+     */
     gchar *event_hdr_version;
 
     /**< array(chassis_plugin) 
@@ -253,6 +272,10 @@ struct chassis {
 #ifndef SIMPLE_PARSER
     struct incremental_guid_state_t guid_state;
 #endif
+    /**
+     * @brief 启动时间
+     * 
+     */
     time_t startup_time;
     time_t child_exit_time;
     time_t current_time;

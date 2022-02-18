@@ -7,32 +7,55 @@
 #include "network-mysqld.h"
 #include "network-injection.h"
 
-#define SQL_LOG_BUFFER_DEF_SIZE 1024*1024*10
+#define SQL_LOG_BUFFER_DEF_SIZE 1024 * 1024 * 10
 #define SQL_LOG_DEF_FILE_PREFIX "cetus"
 #define SQL_LOG_DEF_SUFFIX "clg"
 #define SQL_LOG_DEF_PATH "/var/log/"
 #define SQL_LOG_DEF_IDLETIME 10000
-#define MEGABYTES 1024*1024
+#define MEGABYTES 1024 * 1024
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
+/**
+ * @brief 命令int类型转换成命令文字
+ *
+ */
 #define GET_COM_NAME(com_type) \
-     ((((gushort)com_type) <= 31) ? com_command_name[((gushort)com_type)].com_str : "UNKNOWN TYPE")
+    ((((gushort)com_type) <= 31) ? com_command_name[((gushort)com_type)].com_str : "UNKNOWN TYPE")
 
 #define GET_COM_STRING(query) ((query)->len > 1 ? ((query)->str + 1) : "")
 
-typedef struct com_string {
+/**
+ * @brief sql命令结构体
+ *
+ */
+typedef struct com_string
+{
+    /**
+     * @brief sql命令
+     *
+     */
     char *com_str;
+    /**
+     * @brief sql命令长度
+     *
+     */
     size_t length;
 } COM_STRING;
 
-typedef enum {
+/**
+ * @brief sql日志开关
+ *
+ */
+typedef enum
+{
     OFF,
     ON,
     REALTIME
 } SQL_LOG_SWITCH;
 
-typedef enum {
+typedef enum
+{
     CONNECT = 1,
     CLIENT = 2,
     FRONT = 3,
@@ -40,27 +63,44 @@ typedef enum {
     ALL = 7
 } SQL_LOG_MODE;
 
-typedef enum {
+/**
+ * @brief sqllog线程是否结束的flag
+ * 只有start的时候,sqllog的线程才存在
+ *
+ */
+typedef enum
+{
     SQL_LOG_UNKNOWN,
     SQL_LOG_START,
     SQL_LOG_STOP
 } SQL_LOG_ACTION;
 
-struct rfifo {
+struct rfifo
+{
     guchar *buffer;
     guint size;
     guint in;
     guint out;
 };
 
-struct sql_log_mgr {
+struct sql_log_mgr
+{
     guint sql_log_bufsize;
     SQL_LOG_SWITCH sql_log_switch;
     SQL_LOG_MODE sql_log_mode;
     guint sql_log_maxsize;
     gulong sql_log_cursize;
+    /**
+     * @brief 结束sqlog线程的flag
+     *
+     */
     volatile SQL_LOG_ACTION sql_log_action;
 
+    /**
+     * @brief sqllog刷入磁盘的时间间隔,默认是10s
+     * 也是检测sqllog线程是否需要退出的时间
+     *
+     */
     volatile guint sql_log_idletime;
     volatile guint sql_log_maxnum;
 

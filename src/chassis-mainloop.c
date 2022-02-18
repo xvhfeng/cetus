@@ -31,13 +31,13 @@
 #endif
 
 #ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>           /* event.h need struct timeval */
+#include <sys/time.h> /* event.h need struct timeval */
 #endif
 
 #ifdef HAVE_PWD_H
-#include <pwd.h>                /* getpwnam() */
+#include <pwd.h> /* getpwnam() */
 #endif
-#include <sys/socket.h>         /* for SOCK_STREAM and AF_UNIX/AF_INET */
+#include <sys/socket.h> /* for SOCK_STREAM and AF_UNIX/AF_INET */
 
 #include <glib.h>
 
@@ -58,23 +58,25 @@ extern int cetus_process_id;
  * check if the libevent headers we built against match the
  * library we run against
  */
-int
-chassis_check_version(const char *lib_version, const char *hdr_version)
+int chassis_check_version(const char *lib_version, const char *hdr_version)
 {
     int lib_maj, lib_min;
     int hdr_maj, hdr_min;
     int scanned_fields;
 
-    if (2 != (scanned_fields = sscanf(lib_version, "%d.%d", &lib_maj, &lib_min))) {
+    if (2 != (scanned_fields = sscanf(lib_version, "%d.%d", &lib_maj, &lib_min)))
+    {
         g_critical("%s: library version %s failed to parse: %d", G_STRLOC, lib_version, scanned_fields);
         return -1;
     }
-    if (2 != (scanned_fields = sscanf(hdr_version, "%d.%d", &hdr_maj, &hdr_min))) {
+    if (2 != (scanned_fields = sscanf(hdr_version, "%d.%d", &hdr_maj, &hdr_min)))
+    {
         g_critical("%s: header version %s failed to parse: %d", G_STRLOC, hdr_version, scanned_fields);
         return -1;
     }
 
-    if (lib_maj == hdr_maj && lib_min == hdr_min) {
+    if (lib_maj == hdr_maj && lib_min == hdr_min)
+    {
         return 0;
     }
 
@@ -83,13 +85,16 @@ chassis_check_version(const char *lib_version, const char *hdr_version)
 
 /**
  * create a global context
+ * 创建一个全局的上下文
+ *
  */
-chassis *
-chassis_new()
+chassis *chassis_new()
 {
     chassis *chas;
 
-    if (0 != chassis_check_version(event_get_version(), _EVENT_VERSION)) {
+    //检查event版本,版本不对进程会退出
+    if (0 != chassis_check_version(event_get_version(), _EVENT_VERSION))
+    {
         g_critical("%s: chassis is built against libevent %s, but now runs against %s",
                    G_STRLOC, _EVENT_VERSION, event_get_version());
         return NULL;
@@ -125,7 +130,8 @@ g_queue_free_cache_index(gpointer q)
 
     query_cache_index_item *index;
 
-    while ((index = g_queue_pop_head(queue))) {
+    while ((index = g_queue_pop_head(queue)))
+    {
         g_free(index->key);
         g_free(index);
     }
@@ -140,8 +146,7 @@ g_queue_free_cache_index(gpointer q)
  *
  * @param chas      global context
  */
-void
-chassis_free(chassis *chas)
+void chassis_free(chassis *chas)
 {
     guint i;
 #ifdef HAVE_EVENT_BASE_FREE
@@ -156,7 +161,8 @@ chassis_free(chassis *chas)
         chas->priv_shutdown(chas, chas->priv);
 
     /* call the destructor for all plugins */
-    for (i = 0; i < chas->modules->len; i++) {
+    for (i = 0; i < chas->modules->len; i++)
+    {
         chassis_plugin *p = g_ptr_array_index(chas->modules, i);
 
         g_assert(p->destroy);
@@ -166,7 +172,8 @@ chassis_free(chassis *chas)
     /* cleanup the global 3rd party stuff before we unload the modules */
     chassis_shutdown_hooks_call(chas->shutdown_hooks);
 
-    for (i = 0; i < chas->modules->len; i++) {
+    for (i = 0; i < chas->modules->len; i++)
+    {
         chassis_plugin *p = chas->modules->pdata[i];
 
         chassis_plugin_free(p);
@@ -194,14 +201,17 @@ chassis_free(chassis *chas)
         g_hash_table_destroy(chas->query_cache_table);
     if (chas->cache_index)
         g_queue_free_cache_index(chas->cache_index);
-    if  (chas->unix_socket_name) {
+    if (chas->unix_socket_name)
+    {
         g_free(chas->unix_socket_name);
     }
-    if (chas->trx_isolation_level) {
+    if (chas->trx_isolation_level)
+    {
         g_free(chas->trx_isolation_level);
     }
-    if (chas->default_charset) {
-       g_free(chas->default_charset);
+    if (chas->default_charset)
+    {
+        g_free(chas->default_charset);
     }
 
     g_free(chas->event_hdr_version);
@@ -222,8 +232,10 @@ chassis_free(chassis *chas)
     /* libevent < 1.3e doesn't cleanup its own fds from the event-queue in signal_init()
      * calling event_base_free() would cause a assert() on shutdown
      */
-    if (version && (strcmp(version, "1.3e") >= 0)) {
-        if (chas->event_base) {
+    if (version && (strcmp(version, "1.3e") >= 0))
+    {
+        if (chas->event_base)
+        {
             event_base_free(chas->event_base);
         }
     }
@@ -231,40 +243,50 @@ chassis_free(chassis *chas)
     if (chas->config_manager)
         chassis_config_free(chas->config_manager);
 
-    if(chas->pid_file) {
+    if (chas->pid_file)
+    {
         g_free(chas->pid_file);
     }
 
-    if (chas->old_pid_file) {
+    if (chas->old_pid_file)
+    {
         g_free(chas->old_pid_file);
     }
 
-    if(chas->log_level) {
+    if (chas->log_level)
+    {
         g_free(chas->log_level);
     }
 
-    if (chas->plugin_names) {
+    if (chas->plugin_names)
+    {
         g_strfreev(chas->plugin_names);
     }
 
-    if(chas->log_xa_filename) {
+    if (chas->log_xa_filename)
+    {
         g_free(chas->log_xa_filename);
     }
 
-    if(chas->remote_config_url) {
+    if (chas->remote_config_url)
+    {
         g_free(chas->remote_config_url);
     }
 
-    if(chas->default_file) {
+    if (chas->default_file)
+    {
         g_free(chas->default_file);
     }
 
-    if(chas->sql_mgr) {
+    if (chas->sql_mgr)
+    {
         sql_log_free(chas->sql_mgr);
     }
 
-    if (chas->argv) {
-        for (i = 0; i < chas->argc; i++) {
+    if (chas->argv)
+    {
+        for (i = 0; i < chas->argc; i++)
+        {
             free(chas->argv[i]);
         }
         free(chas->argv);
@@ -273,18 +295,22 @@ chassis_free(chassis *chas)
     g_free(chas);
 }
 
-void
-chassis_set_shutdown_location(const gchar *location)
+void chassis_set_shutdown_location(const gchar *location)
 {
-    if (signal_shutdown == 0) {
+    if (signal_shutdown == 0)
+    {
         g_message("Initiating shutdown, requested from %s", (location != NULL ? location : "signal handler"));
     }
     signal_shutdown = 1;
     cetus_terminate = 1;
 }
 
-gboolean
-chassis_is_shutdown()
+/**
+ * @brief 判断程序是否已经退出
+ * 
+ * @return gboolean 
+ */
+gboolean chassis_is_shutdown()
 {
     return signal_shutdown == 1 || cetus_terminate == 1;
 }
@@ -311,8 +337,7 @@ event_log_use_glib(int libevent_log_level, const char *msg)
     g_log(G_LOG_DOMAIN, glib_log_level, "(libevent) %s", msg);
 }
 
-int
-chassis_mainloop(void *_chas)
+int chassis_mainloop(void *_chas)
 {
     chassis *chas = _chas;
 
@@ -327,32 +352,39 @@ chassis_mainloop(void *_chas)
     /*
      * drop root privileges if requested
      */
-    if (chas->user) {
+    if (chas->user)
+    {
         struct passwd *user_info;
         uid_t user_id = geteuid();
 
         /* Don't bother if we aren't superuser */
-        if (user_id) {
+        if (user_id)
+        {
             g_critical("can only use the --user switch if running as root");
             return -1;
         }
 
-        if (NULL == (user_info = getpwnam(chas->user))) {
+        if (NULL == (user_info = getpwnam(chas->user)))
+        {
             g_critical("unknown user: %s", chas->user);
             return -1;
         }
 
-        if (chas->log->log_filename) {
+        if (chas->log->log_filename)
+        {
             /* chown logfile */
-            if (-1 == chown(chas->log->log_filename, user_info->pw_uid, user_info->pw_gid)) {
+            if (-1 == chown(chas->log->log_filename, user_info->pw_uid, user_info->pw_gid))
+            {
                 g_critical("%s: chown(%s) failed: %s", G_STRLOC, chas->log->log_filename, g_strerror(errno));
 
                 return -1;
             }
         }
 
-        if (setgid(user_info->pw_gid) == 0) {
-            if (setuid(user_info->pw_uid) == 0) {
+        if (setgid(user_info->pw_gid) == 0)
+        {
+            if (setuid(user_info->pw_uid) == 0)
+            {
             }
         }
         g_debug("now running as user: %s (%d/%d)", chas->user, user_info->pw_uid, user_info->pw_gid);
@@ -363,7 +395,8 @@ chassis_mainloop(void *_chas)
     g_thread_init(NULL);
 #endif
 
-    if (cetus_init_signals() == -1 ) {
+    if (cetus_init_signals() == -1)
+    {
         return 1;
     }
 
@@ -388,12 +421,16 @@ incremental_guid_get_next(struct incremental_guid_state_t *s)
     uniq_id |= (msec << 22);
     uniq_id |= (s->worker_id & 0xfff) << 10;
 
-    if (cur_time == s->last_sec && msec == s->last_msec) {
+    if (cur_time == s->last_sec && msec == s->last_msec)
+    {
         s->seq_id = (s->seq_id + 1) & SEQ_MASK;
-        if (s->seq_id == 0) {
+        if (s->seq_id == 0)
+        {
             g_critical("%s:too many calls in one millisecond", G_STRLOC);
         }
-    } else {
+    }
+    else
+    {
         s->seq_id = 0;
     }
 
@@ -404,8 +441,7 @@ incremental_guid_get_next(struct incremental_guid_state_t *s)
     return uniq_id;
 }
 
-void
-incremental_guid_init(struct incremental_guid_state_t *s)
+void incremental_guid_init(struct incremental_guid_state_t *s)
 {
     struct timeval tp;
     gettimeofday(&tp, NULL);
@@ -417,4 +453,3 @@ incremental_guid_init(struct incremental_guid_state_t *s)
     s->seq_id = 0;
 }
 #endif
-

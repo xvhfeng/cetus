@@ -43,6 +43,10 @@ cetus_pid_t     cetus_parent;
 cetus_pid_t     cetus_new_binary;
 
 sig_atomic_t  cetus_reap;
+/**
+ * @brief 退出
+ * 
+ */
 sig_atomic_t  cetus_terminate;
 sig_atomic_t  cetus_quit;
 unsigned int  cetus_exiting;

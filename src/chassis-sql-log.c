@@ -151,6 +151,11 @@ static guint rfifo_flush(struct sql_log_mgr *mgr) {
     return (s1 + s2);
 }
 
+/**
+ * @brief 创建一个记录sql的log
+ * 
+ * @return struct sql_log_mgr* 
+ */
 struct sql_log_mgr *sql_log_alloc() {
     struct sql_log_mgr *mgr = (struct sql_log_mgr *)g_malloc0(sizeof(struct sql_log_mgr));
 
@@ -269,6 +274,12 @@ static void sql_log_check_rotate(struct sql_log_mgr *mgr) {
     }
 }
 
+/**
+ * @brief sqllog线程的main函数
+ * 
+ * @param user_data 
+ * @return gpointer 
+ */
  gpointer sql_log_mainloop(gpointer user_data) {
     struct sql_log_mgr *mgr = (struct sql_log_mgr *)user_data;
     struct stat st;
@@ -306,8 +317,12 @@ sql_log_exit:
     return NULL;
 }
 
-void
-sql_log_thread_start(struct sql_log_mgr *mgr) {
+/**
+ * @brief 开启一个sqllog线程
+ * 
+ * @param mgr 
+ */
+void sql_log_thread_start(struct sql_log_mgr *mgr) {
     if (!mgr) return;
     GThread *sql_log_thread = NULL;
 #if !GLIB_CHECK_VERSION(2, 32, 0)

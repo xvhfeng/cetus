@@ -88,6 +88,7 @@ extern pid_t       cetus_pid;
 
 /**
  * options of the cetus frontend
+ * cetus前端的上下文
  */
 struct chassis_frontend_t {
     int print_version;
@@ -178,6 +179,7 @@ struct chassis_frontend_t {
 
 /**
  * create a new the frontend for the chassis
+ * 创建一个frontend
  */
 struct chassis_frontend_t *
 chassis_frontend_new(void)
@@ -985,7 +987,7 @@ main_cmdline(int argc, char **argv)
     g_log_set_default_handler(chassis_log_func, log);
 
     /* may fail on library mismatch 
-     * 可能在库(plugins吗?)不匹配的时候出错
+     * event库不匹配的时候直接退出进程
      */
     if (NULL == (srv = chassis_new())) {
         GOTO_EXIT(EXIT_FAILURE);
