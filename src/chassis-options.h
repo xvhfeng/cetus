@@ -31,6 +31,10 @@ struct external_param {
 typedef gint (*chas_opt_assign_hook)(const gchar *newval, gpointer param);
 typedef gchar* (*chas_opt_show_hook)(gpointer param);
 
+/**
+ * @brief 命令行参数arg的类型
+ * 
+ */
 enum option_type {              // arg_data type
     OPTION_ARG_NONE,            // bool *
     OPTION_ARG_INT,             // int *
@@ -85,13 +89,22 @@ int chassis_option_set(chassis_option_t *opt,
                        const char *arg_desc,
                        chas_opt_assign_hook assign_hook, chas_opt_show_hook show_hook, gint opt_property);
 
+/**
+ * @brief 命令行和配置文件内的配置项
+ * 
+ */
 typedef struct chassis_options_t {
     GList *options;             /* List of chassis_option_t */
 
-    /* We keep a list of change so we can revert them */
+    /**
+     * 保存了配置的改动列表,所以必要是我们可以回置它
+     * We keep a list of change so we can revert them
+     */
     GList *changes;
 
-    /* We also keep track of all argv elements
+    /* 
+     * 我们也保持对于argv中元素的跟踪
+     * We also keep track of all argv elements
      * that should be NULLed or modified.
      */
     GList *pending_nulls;
