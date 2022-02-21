@@ -213,14 +213,33 @@ chassis_frontend_init_plugins(GPtrArray *plugins,
     return 0;
 }
 
+/**
+ * @brief 给程序增加默认的version和配置文件(default-file)配置项
+ * 并且解析程序的参数
+ * 
+ * @param argc_p 
+ * @param argv_p 
+ * @param print_version 
+ * @param config_file 
+ * @param gerr 
+ * @return int 
+ */
 int
 chassis_frontend_init_base_options(int *argc_p, char ***argv_p, int *print_version, char **config_file, GError **gerr)
 {
     int ret = 0;
     chassis_options_t *opts = chassis_options_new();
+    /**
+     * @brief 给程序增加配置文件和print-version的默认配置信息
+     * 
+     */
     chassis_options_set_cmdline_only_options(opts, print_version, config_file);
     opts->ignore_unknown = TRUE;
 
+/**
+ * @brief 解析命令行的参数
+ * 
+ */
     if (FALSE == chassis_options_parse_cmdline(opts, argc_p, argv_p, gerr)) {
         ret = -1;
     }
@@ -250,6 +269,7 @@ chassis_frontend_open_config_file(const char *filename, GError **gerr)
 }
 
 /**
+ * @brief 给程序增加命令行参数version和default-file配置项的默认值
  * setup the options that can only appear on the command-line
  */
 int

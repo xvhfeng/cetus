@@ -49,8 +49,7 @@ chassis_option_new()
 /**
  * free the option
  */
-void
-chassis_option_free(chassis_option_t *opt)
+void chassis_option_free(chassis_option_t *opt)
 {
     if (!opt)
         return;
@@ -63,16 +62,15 @@ chassis_option_free(chassis_option_t *opt)
  *
  * GOptionEntry
  */
-int
-chassis_option_set(chassis_option_t *opt,
-                   const char *long_name,
-                   gchar short_name,
-                   gint flags,
-                   enum option_type arg,
-                   gpointer arg_data,
-                   const char *description,
-                   const char *arg_desc,
-                   chas_opt_assign_hook assign_hook, chas_opt_show_hook show_hook, gint opt_property)
+int chassis_option_set(chassis_option_t *opt,
+                       const char *long_name,
+                       gchar short_name,
+                       gint flags,
+                       enum option_type arg,
+                       gpointer arg_data,
+                       const char *description,
+                       const char *arg_desc,
+                       chas_opt_assign_hook assign_hook, chas_opt_show_hook show_hook, gint opt_property)
 {
     opt->long_name = long_name;
     opt->short_name = short_name;
@@ -86,7 +84,6 @@ chassis_option_set(chassis_option_t *opt,
     opt->opt_property = opt_property;
     return 0;
 }
-
 
 /**
  * create a command-line option
@@ -106,8 +103,7 @@ chassis_options_new()
  *
  * GOptionEntry
  */
-int
-chassis_options_add_option(chassis_options_t *opts, chassis_option_t *opt)
+int chassis_options_add_option(chassis_options_t *opts, chassis_option_t *opt)
 {
 
     opts->options = g_list_append(opts->options, opt);
@@ -115,22 +111,37 @@ chassis_options_add_option(chassis_options_t *opts, chassis_option_t *opt)
     return 0;
 }
 
-void
-chassis_options_add_options(chassis_options_t *opts, GList *list)
+void chassis_options_add_options(chassis_options_t *opts, GList *list)
 {
     opts->options = g_list_concat(opts->options, list);
 }
 
-int
-chassis_options_add(chassis_options_t *opts,
-                    const char *long_name,
-                    gchar short_name,
-                    int flags,
-                    enum option_type arg,
-                    gpointer arg_data,
-                    const char *description,
-                    const char *arg_desc,
-                    chas_opt_assign_hook assign_hook, chas_opt_show_hook show_hook, gint opt_property)
+/**
+ * @brief 增加一个参数与其参数值,可同时为一个配置项增加long与short类型
+ * 比如打印版本,既可以为version也可以为V
+ * 
+ * @param opts 
+ * @param long_name 
+ * @param short_name 
+ * @param flags 
+ * @param arg 
+ * @param arg_data 
+ * @param description 
+ * @param arg_desc 
+ * @param assign_hook 
+ * @param show_hook 
+ * @param opt_property 
+ * @return int 
+ */
+int chassis_options_add(chassis_options_t *opts,
+                        const char *long_name,
+                        gchar short_name,
+                        int flags,
+                        enum option_type arg,
+                        gpointer arg_data,
+                        const char *description,
+                        const char *arg_desc,
+                        chas_opt_assign_hook assign_hook, chas_opt_show_hook show_hook, gint opt_property)
 {
     chassis_option_t *opt = chassis_option_new();
     if (0 != chassis_option_set(opt,
@@ -140,10 +151,14 @@ chassis_options_add(chassis_options_t *opts,
                                 arg,
                                 arg_data,
                                 description,
-                                arg_desc, assign_hook, show_hook, opt_property) || 0 != chassis_options_add_option(opts, opt)) {
+                                arg_desc, assign_hook, show_hook, opt_property) ||
+        0 != chassis_options_add_option(opts, opt))
+    {
         chassis_option_free(opt);
         return -1;
-    } else {
+    }
+    else
+    {
         return 0;
     }
 }
@@ -152,10 +167,12 @@ chassis_options_add(chassis_options_t *opts,
 
 #define OPTIONAL_ARG(entry) FALSE
 
-struct opt_change {
+struct opt_change
+{
     enum option_type arg_type;
     gpointer arg_data;
-    union {
+    union
+    {
         gboolean bool;
         gint integer;
         gchar *str;
@@ -163,16 +180,19 @@ struct opt_change {
         gdouble dbl;
         gint64 int64;
     } prev;
-    union {
+    union
+    {
         gchar *str;
-        struct {
+        struct
+        {
             gint len;
             gchar **data;
         } array;
     } allocated;
 };
 
-struct pending_null {
+struct pending_null
+{
     gchar **ptr;
     gchar *value;
 };
@@ -181,7 +201,8 @@ static gboolean
 context_has_h_entry(chassis_options_t *context)
 {
     GList *l;
-    for (l = context->options; l; l = l->next) {
+    for (l = context->options; l; l = l->next)
+    {
         chassis_option_t *entry = l->data;
         if (entry->short_name == 'h')
             return TRUE;
@@ -203,17 +224,22 @@ print_help(chassis_options_t *context)
 
     g_print("\n\nApplication Options:\n");
     GList *l;
-    for (l = context->options; l; l = l->next) {
+    for (l = context->options; l; l = l->next)
+    {
         chassis_option_t *entry = l->data;
         int len = 0;
-        if (entry->short_name) {
+        if (entry->short_name)
+        {
             g_print("  -%c, --%s", entry->short_name, entry->long_name);
             len = 8 + strlen(entry->long_name);
-        } else {
+        }
+        else
+        {
             g_print("  --%s", entry->long_name);
             len = 4 + strlen(entry->long_name);
         }
-        if (entry->arg_description) {
+        if (entry->arg_description)
+        {
             g_print("=%s", entry->arg_description);
             len += 1 + strlen(entry->arg_description);
         }
@@ -231,14 +257,16 @@ parse_int(const gchar *arg_name, const gchar *arg, gint *result, GError **error)
     errno = 0;
     tmp = strtol(arg, &end, 0);
 
-    if (*arg == '\0' || *end != '\0') {
+    if (*arg == '\0' || *end != '\0')
+    {
         g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                     "Cannot parse integer value '%s' for %s", arg, arg_name);
         return FALSE;
     }
 
     *result = tmp;
-    if (*result != tmp || errno == ERANGE) {
+    if (*result != tmp || errno == ERANGE)
+    {
         g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                     "Integer value '%s' for %s out of range", arg, arg_name);
         return FALSE;
@@ -255,12 +283,14 @@ parse_double(const gchar *arg_name, const gchar *arg, gdouble *result, GError **
     errno = 0;
     tmp = g_strtod(arg, &end);
 
-    if (*arg == '\0' || *end != '\0') {
+    if (*arg == '\0' || *end != '\0')
+    {
         g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                     "Cannot parse double value '%s' for %s", arg, arg_name);
         return FALSE;
     }
-    if (errno == ERANGE) {
+    if (errno == ERANGE)
+    {
         g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                     "Double value '%s' for %s out of range", arg, arg_name);
         return FALSE;
@@ -278,12 +308,14 @@ parse_int64(const gchar *arg_name, const gchar *arg, gint64 *result, GError **er
     errno = 0;
     tmp = g_ascii_strtoll(arg, &end, 0);
 
-    if (*arg == '\0' || *end != '\0') {
+    if (*arg == '\0' || *end != '\0')
+    {
         g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                     "Cannot parse integer value '%s' for %s", arg, arg_name);
         return FALSE;
     }
-    if (errno == ERANGE) {
+    if (errno == ERANGE)
+    {
         g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                     "Integer value '%s' for %s out of range", arg, arg_name);
         return FALSE;
@@ -298,7 +330,8 @@ get_change(chassis_options_t *context, enum option_type arg_type, gpointer arg_d
     GList *list;
     struct opt_change *change = NULL;
 
-    for (list = context->changes; list != NULL; list = list->next) {
+    for (list = context->changes; list != NULL; list = list->next)
+    {
         change = list->data;
 
         if (change->arg_data == arg_data)
@@ -311,7 +344,7 @@ get_change(chassis_options_t *context, enum option_type arg_type, gpointer arg_d
 
     context->changes = g_list_prepend(context->changes, change);
 
-  found:
+found:
     return change;
 }
 
@@ -335,14 +368,17 @@ parse_arg(chassis_options_t *context,
 
     g_assert(value || OPTIONAL_ARG(entry) || NO_ARG(entry));
 
-    switch (entry->arg) {
-    case OPTION_ARG_NONE:{
+    switch (entry->arg)
+    {
+    case OPTION_ARG_NONE:
+    {
         (void)get_change(context, OPTION_ARG_NONE, entry->arg_data);
 
         *(gboolean *)entry->arg_data = !(entry->flags & OPTION_FLAG_REVERSE);
         break;
     }
-    case OPTION_ARG_STRING:{
+    case OPTION_ARG_STRING:
+    {
         gchar *data = g_locale_to_utf8(value, -1, NULL, NULL, error);
         if (!data)
             return FALSE;
@@ -356,17 +392,21 @@ parse_arg(chassis_options_t *context,
         *(gchar **)entry->arg_data = data;
         break;
     }
-    case OPTION_ARG_STRING_ARRAY:{
+    case OPTION_ARG_STRING_ARRAY:
+    {
         gchar *data = g_locale_to_utf8(value, -1, NULL, NULL, error);
         if (!data)
             return FALSE;
 
         change = get_change(context, OPTION_ARG_STRING_ARRAY, entry->arg_data);
 
-        if (change->allocated.array.len == 0) {
+        if (change->allocated.array.len == 0)
+        {
             change->prev.array = *(gchar ***)entry->arg_data;
             change->allocated.array.data = g_new(gchar *, 2);
-        } else {
+        }
+        else
+        {
             change->allocated.array.data =
                 g_renew(gchar *, change->allocated.array.data, change->allocated.array.len + 2);
         }
@@ -379,7 +419,8 @@ parse_arg(chassis_options_t *context,
 
         break;
     }
-    case OPTION_ARG_INT:{
+    case OPTION_ARG_INT:
+    {
         gint data;
         if (!parse_int(option_name, value, &data, error))
             return FALSE;
@@ -389,9 +430,11 @@ parse_arg(chassis_options_t *context,
         *(gint *)entry->arg_data = data;
         break;
     }
-    case OPTION_ARG_DOUBLE:{
+    case OPTION_ARG_DOUBLE:
+    {
         gdouble data;
-        if (!parse_double(option_name, value, &data, error)) {
+        if (!parse_double(option_name, value, &data, error))
+        {
             return FALSE;
         }
         change = get_change(context, OPTION_ARG_DOUBLE, entry->arg_data);
@@ -399,9 +442,11 @@ parse_arg(chassis_options_t *context,
         *(gdouble *)entry->arg_data = data;
         break;
     }
-    case OPTION_ARG_INT64:{
+    case OPTION_ARG_INT64:
+    {
         gint64 data;
-        if (!parse_int64(option_name, value, &data, error)) {
+        if (!parse_int64(option_name, value, &data, error))
+        {
             return FALSE;
         }
         change = get_change(context, OPTION_ARG_INT64, entry->arg_data);
@@ -421,38 +466,55 @@ parse_short_option(chassis_options_t *context,
                    gint idx, gint *new_idx, gchar arg, gint *argc, gchar ***argv, GError **error, gboolean *parsed)
 {
     GList *l;
-    for (l = context->options; l; l = l->next) {
+    for (l = context->options; l; l = l->next)
+    {
         chassis_option_t *entry = l->data;
 
-        if (arg == entry->short_name) {
+        if (arg == entry->short_name)
+        {
             gchar *option_name = g_strdup_printf("-%c", entry->short_name);
             gchar *value = NULL;
-            if (NO_ARG(entry)) {
+            if (NO_ARG(entry))
+            {
                 value = NULL;
-            } else {
-                if (*new_idx > idx) {
+            }
+            else
+            {
+                if (*new_idx > idx)
+                {
                     g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_FAILED, "Error parsing option %s", option_name);
                     g_free(option_name);
                     return FALSE;
                 }
 
-                if (idx < *argc - 1) {
-                    if (!OPTIONAL_ARG(entry)) {
+                if (idx < *argc - 1)
+                {
+                    if (!OPTIONAL_ARG(entry))
+                    {
                         value = (*argv)[idx + 1];
                         add_pending_null(context, &((*argv)[idx + 1]), NULL);
                         *new_idx = idx + 1;
-                    } else {
-                        if ((*argv)[idx + 1][0] == '-') {
+                    }
+                    else
+                    {
+                        if ((*argv)[idx + 1][0] == '-')
+                        {
                             value = NULL;
-                        } else {
+                        }
+                        else
+                        {
                             value = (*argv)[idx + 1];
                             add_pending_null(context, &((*argv)[idx + 1]), NULL);
                             *new_idx = idx + 1;
                         }
                     }
-                } else if (idx >= *argc - 1 && OPTIONAL_ARG(entry)) {
+                }
+                else if (idx >= *argc - 1 && OPTIONAL_ARG(entry))
+                {
                     value = NULL;
-                } else {
+                }
+                else
+                {
                     g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                                 "Missing argument for %s", option_name);
                     g_free(option_name);
@@ -460,7 +522,8 @@ parse_short_option(chassis_options_t *context,
                 }
             }
 
-            if (!parse_arg(context, entry, value, option_name, error)) {
+            if (!parse_arg(context, entry, value, option_name, error))
+            {
                 g_free(option_name);
                 return FALSE;
             }
@@ -471,17 +534,33 @@ parse_short_option(chassis_options_t *context,
     return TRUE;
 }
 
-static gboolean
-parse_long_option(chassis_options_t *context,
-                  gint *idx, gchar *arg, gboolean aliased, gint *argc, gchar ***argv, GError **error, gboolean *parsed)
+/**
+ * @brief 解析长命令行选项
+ *
+ * @param context opt
+ * @param idx
+ * @param arg
+ * @param aliased
+ * @param argc
+ * @param argv
+ * @param error
+ * @param parsed
+ * @return gboolean
+ */
+static gboolean parse_long_option(chassis_options_t *context,
+                                  gint *idx, gchar *arg, gboolean aliased,
+                                  gint *argc, gchar ***argv,
+                                  GError **error, gboolean *parsed)
 {
     GList *l;
-    for (l = context->options; l; l = l->next) {
+    for (l = context->options; l; l = l->next)
+    {
         chassis_option_t *entry = l->data;
         if (*idx >= *argc)
             return TRUE;
 
-        if (NO_ARG(entry) && strcmp(arg, entry->long_name) == 0) {
+        if (NO_ARG(entry) && strcmp(arg, entry->long_name) == 0)
+        {
             gchar *option_name = g_strconcat("--", entry->long_name, NULL);
             gboolean retval = parse_arg(context, entry, NULL, option_name, error);
             g_free(option_name);
@@ -490,48 +569,65 @@ parse_long_option(chassis_options_t *context,
             *parsed = TRUE;
 
             return retval;
-        } else {
+        }
+        else
+        {
             gint len = strlen(entry->long_name);
 
-            if (strncmp(arg, entry->long_name, len) == 0 && (arg[len] == '=' || arg[len] == 0)) {
+            if (strncmp(arg, entry->long_name, len) == 0 && (arg[len] == '=' || arg[len] == 0))
+            {
                 gchar *value = NULL;
                 gchar *option_name;
 
                 add_pending_null(context, &((*argv)[*idx]), NULL);
                 option_name = g_strconcat("--", entry->long_name, NULL);
 
-                if (arg[len] == '=') {
+                if (arg[len] == '=')
+                {
                     value = arg + len + 1;
-                } else if (*idx < *argc - 1) {
-                    if (!OPTIONAL_ARG(entry)) {
+                }
+                else if (*idx < *argc - 1)
+                {
+                    if (!OPTIONAL_ARG(entry))
+                    {
                         value = (*argv)[*idx + 1];
                         add_pending_null(context, &((*argv)[*idx + 1]), NULL);
                         (*idx)++;
-                    } else {
-                        if ((*argv)[*idx + 1][0] == '-') {
+                    }
+                    else
+                    {
+                        if ((*argv)[*idx + 1][0] == '-')
+                        {
                             gboolean retval = parse_arg(context, entry,
                                                         NULL, option_name, error);
                             *parsed = TRUE;
                             g_free(option_name);
                             return retval;
-                        } else {
+                        }
+                        else
+                        {
                             value = (*argv)[*idx + 1];
                             add_pending_null(context, &((*argv)[*idx + 1]), NULL);
                             (*idx)++;
                         }
                     }
-                } else if (*idx >= *argc - 1 && OPTIONAL_ARG(entry)) {
+                }
+                else if (*idx >= *argc - 1 && OPTIONAL_ARG(entry))
+                {
                     gboolean retval = parse_arg(context, entry, NULL, option_name, error);
                     *parsed = TRUE;
                     g_free(option_name);
                     return retval;
-                } else {
+                }
+                else
+                {
                     g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
                                 "Missing argument for %s", option_name);
                     g_free(option_name);
                     return FALSE;
                 }
-                if (!parse_arg(context, entry, value, option_name, error)) {
+                if (!parse_arg(context, entry, value, option_name, error))
+                {
                     g_free(option_name);
                     return FALSE;
                 }
@@ -547,7 +643,8 @@ static gboolean
 parse_remaining_arg(chassis_options_t *context, gint *idx, gint *argc, gchar ***argv, GError **error, gboolean *parsed)
 {
     GList *l;
-    for (l = context->options; l; l = l->next) {
+    for (l = context->options; l; l = l->next)
+    {
         chassis_option_t *entry = l->data;
         if (*idx >= *argc)
             return TRUE;
@@ -572,11 +669,14 @@ static void
 free_changes_list(chassis_options_t *context, gboolean revert)
 {
     GList *list;
-    for (list = context->changes; list != NULL; list = list->next) {
+    for (list = context->changes; list != NULL; list = list->next)
+    {
         struct opt_change *change = list->data;
 
-        if (revert) {
-            switch (change->arg_type) {
+        if (revert)
+        {
+            switch (change->arg_type)
+            {
             case OPTION_ARG_NONE:
                 *(gboolean *)change->arg_data = change->prev.bool;
                 break;
@@ -611,15 +711,20 @@ static void
 free_pending_nulls(chassis_options_t *context, gboolean perform_nulls)
 {
     GList *list;
-    for (list = context->pending_nulls; list != NULL; list = list->next) {
+    for (list = context->pending_nulls; list != NULL; list = list->next)
+    {
         struct pending_null *n = list->data;
 
-        if (perform_nulls) {
-            if (n->value) {
+        if (perform_nulls)
+        {
+            if (n->value)
+            {
                 /* Copy back the short options */
                 *(n->ptr)[0] = '-';
                 strcpy(*n->ptr + 1, n->value);
-            } else {
+            }
+            else
+            {
                 *n->ptr = NULL;
             }
         }
@@ -633,13 +738,12 @@ free_pending_nulls(chassis_options_t *context, gboolean perform_nulls)
 /**
  * free the option context
  */
-void
-chassis_options_free(chassis_options_t *context)
+void chassis_options_free(chassis_options_t *context)
 {
     if (!context)
         return;
 
-    g_list_free_full(context->options, (GDestroyNotify) chassis_option_free);
+    g_list_free_full(context->options, (GDestroyNotify)chassis_option_free);
 
     free_changes_list(context, FALSE);
     free_pending_nulls(context, FALSE);
@@ -647,15 +751,26 @@ chassis_options_free(chassis_options_t *context)
     g_slice_free(chassis_options_t, context);
 }
 
-gboolean
-chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***argv, GError **error)
+/**
+ * @brief 解析命令行参数,包括前面加入的version和配置文件(default-file)信息
+ * 
+ * @param context 
+ * @param argc 
+ * @param argv 
+ * @param error 
+ * @return gboolean 
+ */
+gboolean chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***argv, GError **error)
 {
     if (!argc || !argv)
         return FALSE;
     /* Set program name */
-    if (!g_get_prgname()) {
-        if (*argc) {
+    if (!g_get_prgname())
+    {
+        if (*argc)
+        {
             gchar *prgname = g_path_get_basename((*argv)[0]);
+            //从命令行命令的第一个元素中得到并且设置程序的名称
             g_set_prgname(prgname ? prgname : "<unknown>");
             g_free(prgname);
         }
@@ -665,27 +780,34 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
     gboolean has_unknown = FALSE;
     gint separator_pos = 0;
     int i, j, k;
-    for (i = 1; i < *argc; i++) {
+    for (i = 1; i < *argc; i++)
+    {
         gchar *arg;
         gboolean parsed = FALSE;
 
-        if ((*argv)[i][0] == '-' && (*argv)[i][1] != '\0' && !stop_parsing) {
-            if ((*argv)[i][1] == '-') {
+        if ((*argv)[i][0] == '-' && (*argv)[i][1] != '\0' && !stop_parsing)
+        {
+            if ((*argv)[i][1] == '-')
+            { // --正常参数配置模式
                 /* -- option */
 
                 arg = (*argv)[i] + 2;
 
-                /* '--' terminates list of arguments */
-                if (*arg == 0) {
+                /* 如果只有--,而没有详细的参数名,则出错
+                 * '--' terminates list of arguments */
+                if (*arg == 0)
+                {
                     separator_pos = i;
                     stop_parsing = TRUE;
                     continue;
                 }
 
-                /* Handle help options */
+                /*
+                 * help命令
+                 * Handle help options */
                 if (context->help_enabled && strcmp(arg, "help") == 0)
                     print_help(context);
-
+                // --->> this
                 if (!parse_long_option(context, &i, arg, FALSE, argc, argv, error, &parsed))
                     goto fail;
 
@@ -694,7 +816,9 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
 
                 if (context->ignore_unknown)
                     continue;
-            } else {            /* short option */
+            }
+            else
+            { //短配置项模式         /* short option */
                 gint new_i = i, arg_length;
                 gboolean *nulled_out = NULL;
                 gboolean has_h_entry = context_has_h_entry(context);
@@ -703,7 +827,8 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
                 nulled_out = g_newa(gboolean, arg_length);
                 memset(nulled_out, 0, arg_length * sizeof(gboolean));
 
-                for (j = 0; j < arg_length; j++) {
+                for (j = 0; j < arg_length; j++)
+                {
                     if (context->help_enabled && (arg[j] == '?' || (arg[j] == 'h' && !has_h_entry)))
                         print_help(context);
                     parsed = FALSE;
@@ -718,11 +843,14 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
                         break;
                     /* !context->ignore_unknown && parsed */
                 }
-                if (context->ignore_unknown) {
+                if (context->ignore_unknown)
+                {
                     gchar *new_arg = NULL;
                     gint arg_index = 0;
-                    for (j = 0; j < arg_length; j++) {
-                        if (!nulled_out[j]) {
+                    for (j = 0; j < arg_length; j++)
+                    {
+                        if (!nulled_out[j])
+                        {
                             if (!new_arg)
                                 new_arg = g_malloc(arg_length + 1);
                             new_arg[arg_index++] = arg[j];
@@ -732,7 +860,9 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
                         new_arg[arg_index] = '\0';
                     add_pending_null(context, &((*argv)[i]), new_arg);
                     i = new_i;
-                } else if (parsed) {
+                }
+                else if (parsed)
+                {
                     add_pending_null(context, &((*argv)[i]), NULL);
                     i = new_i;
                 }
@@ -741,12 +871,15 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
             if (!parsed)
                 has_unknown = TRUE;
 
-            if (!parsed && !context->ignore_unknown) {
+            if (!parsed && !context->ignore_unknown)
+            {
                 g_set_error(error, G_OPTION_ERROR, G_OPTION_ERROR_UNKNOWN_OPTION, "Unknown option %s", (*argv)[i]);
                 goto fail;
             }
-        } else {
-            //if (context->strict_posix)
+        }
+        else
+        {
+            // if (context->strict_posix)
             stop_parsing = TRUE;
 
             /* Collect remaining args */
@@ -759,16 +892,20 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
 
     if (separator_pos > 0)
         add_pending_null(context, &((*argv)[separator_pos]), NULL);
-    if (argc && argv) {
+    if (argc && argv)
+    {
         free_pending_nulls(context, TRUE);
-        for (i = 1; i < *argc; i++) {
+        for (i = 1; i < *argc; i++)
+        {
             for (k = i; k < *argc; k++)
                 if ((*argv)[k] != NULL)
                     break;
 
-            if (k > i) {
+            if (k > i)
+            {
                 k -= i;
-                for (j = i + k; j < *argc; j++) {
+                for (j = i + k; j < *argc; j++)
+                {
                     (*argv)[j - k] = (*argv)[j];
                     (*argv)[j] = NULL;
                 }
@@ -778,7 +915,7 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
     }
     return TRUE;
 
-  fail:
+fail:
     free_changes_list(context, TRUE);
     free_pending_nulls(context, FALSE);
     return FALSE;
@@ -787,9 +924,11 @@ chassis_options_parse_cmdline(chassis_options_t *context, int *argc, char ***arg
 chassis_option_t *chassis_options_get(GList *opts, const char *long_name)
 {
     GList *l = opts;
-    for (l = opts; l; l = l->next) {
+    for (l = opts; l; l = l->next)
+    {
         chassis_option_t *opt = l->data;
-        if (strcmp(opt->long_name, long_name)==0) {
+        if (strcmp(opt->long_name, long_name) == 0)
+        {
             return opt;
         }
     }

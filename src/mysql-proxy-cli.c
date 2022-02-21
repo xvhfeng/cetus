@@ -139,6 +139,10 @@ struct chassis_frontend_t {
     gchar *base_dir;
     gchar *conf_dir;
 
+/**
+ * @brief 默认的配置文件地址
+ * 
+ */
     gchar *default_file;
     GKeyFile *keyfile;
 
@@ -1008,10 +1012,13 @@ main_cmdline(int argc, char **argv)
         GOTO_EXIT(EXIT_FAILURE);
     }
 
+// ------>>now 
     /**
      * parse once to get the basic options like --default-file and --version
      *
      * leave the unknown options in the list
+     * 解析基础的命令行参数
+     * 将未知参数保存起来
      */
 
     if (chassis_frontend_init_base_options(&argc, &argv, &(frontend->print_version), &(frontend->default_file), &gerr)) {
@@ -1020,6 +1027,8 @@ main_cmdline(int argc, char **argv)
 
         GOTO_EXIT(EXIT_FAILURE);
     }
+    
+    //到这里位置没有地方为version赋值,这个值哪儿来?
     srv->print_version = frontend->print_version;
 
     if (frontend->default_file) {
